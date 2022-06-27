@@ -1,0 +1,53 @@
+import { ethers } from "ethers";
+import "dotenv/config";
+import * as ballotJson from "../../artifacts/contracts/Ballot.sol/Ballot.json";
+import { Ballot } from "../../typechain";
+
+const EXPOSED_KEY =
+  "8da4ef21b864d2cc526dbdb2a120bd2874c36c9d0a1fb7f8c63d7f7a8b41de8f";
+
+const contractAddress = "0x6a345dbc03d92cff8e62624edd0f83921b3c9623";
+
+async function main() {
+  const provider = ethers.providers.getDefaultProvider("ropsten");
+  //   const provider = new ethers.providers.AlchemyProvider(
+  //     "rinkeby",
+  //     "wJoiAGlsxClwVAFA03EJoqPaIhHNjpVJ"
+  //   );
+
+  const wallet = new ethers.Wallet(
+    process.env.PRIVATE_KEY ?? EXPOSED_KEY,
+    provider
+  );
+
+  // instead of doing this we declared the provider when creating the wallet object
+  // and injected the wallet object in the Contract creation
+  // const signer = wallet.connect(provider);
+
+  const ballotContract: Ballot = new ethers.Contract(
+    contractAddress,
+    ballotJson.abi,
+    wallet
+  ) as Ballot;
+
+  const proposal = await ballotContract.proposals(0);
+  console.log(ethers.utils.parseBytes32String(proposal.name));
+
+  let stillExists = true;
+  let i = 0;
+  while (stillExists) {
+    try {
+      const proposal = await ballotContract.proposals(i);
+      console.log(ethers.utils.parseBytes32String(proposal.name));
+      console.log(proposal.voteCount.toNumber());
+      i++;
+    } catch (err) {
+      stillExists = false;
+    }
+  }
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

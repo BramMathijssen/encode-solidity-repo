@@ -21,6 +21,7 @@ async function main() {
       ? ethers.Wallet.fromMnemonic(process.env.MNEMONIC)
       : new ethers.Wallet(process.env.PRIVATE_KEY ?? EXPOSED_KEY);
   console.log(`Using address ${wallet.address}`);
+
   const provider = ethers.providers.getDefaultProvider("ropsten");
   const signer = wallet.connect(provider);
   const balanceBN = await signer.getBalance();
@@ -29,6 +30,7 @@ async function main() {
   if (balance < 0.01) {
     throw new Error("Not enough ether");
   }
+
   console.log("Deploying Ballot contract");
   console.log("Proposals: ");
   const proposals = process.argv.slice(2);
@@ -36,6 +38,7 @@ async function main() {
   proposals.forEach((element, index) => {
     console.log(`Proposal N. ${index + 1}: ${element}`);
   });
+
   const ballotFactory = new ethers.ContractFactory(
     ballotJson.abi,
     ballotJson.bytecode,
