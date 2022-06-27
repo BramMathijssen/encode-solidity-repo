@@ -97,30 +97,37 @@ describe("Ballot", function () {
     it("is able to vote when the voter address has right to vote", async function () {
       const voterAccount = accounts[1];
 
+      // First checking voterWeight before calling giveRightToVote() function
       const voterWeightBefore = (
         await ballotContract.voters(voterAccount.address)
       ).weight.toNumber();
 
+      // VoterWeight = 0
       console.log("before", voterWeightBefore);
 
       // Method1
       await ballotContract.giveRightToVote(voterAccount.address);
-      // Method2
-      await giveRightToVote(ballotContract, voterAccount.address);
-      // Method3
-      await ballotContract
-        .connect(accounts[0])
-        .giveRightToVote(accounts[1].address);
+      // // Method2
+      // await giveRightToVote(ballotContract, voterAccount.address);
+      // // Method3
+      // await ballotContract
+      //   .connect(accounts[0])
+      //   .giveRightToVote(accounts[1].address);
 
+      // Checking VoterWeight again after having called the giveRightToVote() function
       const voterWeightAfter = (
         await ballotContract.voters(voterAccount.address)
       ).weight.toNumber();
 
+      // VoterWeight = 1
       console.log("after", voterWeightAfter);
 
-      await expect(
-        ballotContract.connect(accounts[1]).vote(1)
-      ).to.be.revertedWith("Has no right to vote");
+      // Calling the vote() function now our voterWeight = 1
+      await ballotContract.vote(1);
+
+      await expect((await ballotContract.proposals(1)).voteCount).to.be.equal(
+        1
+      );
     });
   });
 
