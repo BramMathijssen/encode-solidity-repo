@@ -22,7 +22,7 @@ describe("Ballot", function () {
   let ballotContract: Ballot;
   let accounts: any[];
 
-  this.beforeEach(async function () {
+  beforeEach(async function () {
     accounts = await ethers.getSigners();
     const ballotFactory = await ethers.getContractFactory("Ballot");
     ballotContract = await ballotFactory.deploy(
@@ -87,8 +87,40 @@ describe("Ballot", function () {
 
   describe("when the voter interact with the vote function in the contract", function () {
     // TODO
-    it("is not implemented", async function () {
-      throw new Error("Not implemented");
+    it("is not able to vote when the voter address has no right to vote", async function () {
+      const voterAccount = accounts[1];
+      await expect(
+        ballotContract.connect(voterAccount).vote(1)
+      ).to.be.revertedWith("Has no right to vote");
+    });
+
+    it("is able to vote when the voter address has right to vote", async function () {
+      const voterAccount = accounts[1];
+
+      const voterWeightBefore = (
+        await ballotContract.voters(voterAccount.address)
+      ).weight.toNumber();
+
+      console.log("before", voterWeightBefore);
+
+      // Method1
+      await ballotContract.giveRightToVote(voterAccount.address);
+      // Method2
+      await giveRightToVote(ballotContract, voterAccount.address);
+      // Method3
+      await ballotContract
+        .connect(accounts[0])
+        .giveRightToVote(accounts[1].address);
+
+      const voterWeightAfter = (
+        await ballotContract.voters(voterAccount.address)
+      ).weight.toNumber();
+
+      console.log("after", voterWeightAfter);
+
+      await expect(
+        ballotContract.connect(accounts[1]).vote(1)
+      ).to.be.revertedWith("Has no right to vote");
     });
   });
 
