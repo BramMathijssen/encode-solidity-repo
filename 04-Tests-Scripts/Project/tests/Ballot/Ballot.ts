@@ -129,6 +129,34 @@ describe("Ballot", function () {
         1
       );
     });
+
+    it("is not able to vote if already voted before", async function () {
+      const vote = await ballotContract.vote(1);
+      const voteTx = await vote.wait();
+      console.log(voteTx);
+
+      expect(ballotContract.connect(accounts[0]).vote(1)).to.be.revertedWith(
+        "Already voted."
+      );
+    });
+
+    it("(1st- Form) sets the right proposal property for the voter", async function () {
+      await ballotContract.vote(1);
+
+      const voter = accounts[0].address;
+      const votedProposal = (
+        await ballotContract.voters(voter)
+      ).vote.toNumber();
+
+      expect(votedProposal).to.eq(1);
+    });
+
+    it("(2nd - Form) sets the right proposal property for the voter", async function () {
+      await ballotContract.vote(1);
+      const voter = await ballotContract.voters(accounts[0].address);
+      const vote = voter.vote.toNumber();
+      await expect(vote).to.eq(1);
+    });
   });
 
   describe("when the voter interact with the delegate function in the contract", function () {
