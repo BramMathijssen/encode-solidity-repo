@@ -22,7 +22,7 @@ describe("Ballot", function () {
   let ballotContract: Ballot;
   let accounts: any[];
 
-  beforeEach(async function () {
+  this.beforeEach(async function () {
     accounts = await ethers.getSigners();
     const ballotFactory = await ethers.getContractFactory("Ballot");
     ballotContract = await ballotFactory.deploy(
@@ -83,93 +83,56 @@ describe("Ballot", function () {
         giveRightToVote(ballotContract, voterAddress)
       ).to.be.revertedWith("");
     });
+
+    it("triggers the NewVoter event with the address of the new voter", async function () {
+      const voterAddress = accounts[1].address;
+      await expect(ballotContract.giveRightToVote(voterAddress))
+        .to.emit(ballotContract, "NewVoter")
+        .withArgs(voterAddress);
+    });
   });
 
   describe("when the voter interact with the vote function in the contract", function () {
     // TODO
-    it("is not able to vote when the voter address has no right to vote", async function () {
-      const voterAccount = accounts[1];
-      await expect(
-        ballotContract.connect(voterAccount).vote(1)
-      ).to.be.revertedWith("Has no right to vote");
-    });
-
-    it("is able to vote when the voter address has right to vote", async function () {
-      const voterAccount = accounts[1];
-
-      // First checking voterWeight before calling giveRightToVote() function
-      const voterWeightBefore = (
-        await ballotContract.voters(voterAccount.address)
-      ).weight.toNumber();
-
-      // VoterWeight = 0
-      console.log("before", voterWeightBefore);
-
-      // Method1
-      await ballotContract.giveRightToVote(voterAccount.address);
-      // // Method2
-      // await giveRightToVote(ballotContract, voterAccount.address);
-      // // Method3
-      // await ballotContract
-      //   .connect(accounts[0])
-      //   .giveRightToVote(accounts[1].address);
-
-      // Checking VoterWeight again after having called the giveRightToVote() function
-      const voterWeightAfter = (
-        await ballotContract.voters(voterAccount.address)
-      ).weight.toNumber();
-
-      // VoterWeight = 1
-      console.log("after", voterWeightAfter);
-
-      // Calling the vote() function now our voterWeight = 1
-      await ballotContract.vote(1);
-
-      await expect((await ballotContract.proposals(1)).voteCount).to.be.equal(
-        1
-      );
-    });
-
-    it("is not able to vote if already voted before", async function () {
-      const vote = await ballotContract.vote(1);
-      const voteTx = await vote.wait();
-      console.log(voteTx);
-
-      expect(ballotContract.connect(accounts[0]).vote(1)).to.be.revertedWith(
-        "Already voted."
-      );
-    });
-
-    it("(1st- Form) sets the right proposal property for the voter", async function () {
-      await ballotContract.vote(1);
-
-      const voter = accounts[0].address;
-      const votedProposal = (
-        await ballotContract.voters(voter)
-      ).vote.toNumber();
-
-      expect(votedProposal).to.eq(1);
-    });
-
-    it("(2nd - Form) sets the right proposal property for the voter", async function () {
-      await ballotContract.vote(1);
-      const voter = await ballotContract.voters(accounts[0].address);
-      const vote = voter.vote.toNumber();
-      await expect(vote).to.eq(1);
-    });
-
-    it("increase proposal voteCount by voted voteweight", async function () {
-      await ballotContract.vote(1);
-
-      const voteCount = await (
-        await ballotContract.proposals(1)
-      ).voteCount.toNumber();
-
-      await expect(voteCount).to.eq(1);
+    it("triggers the Voted event", async function () {
+      const voterAddress = accounts[1].address;
+      await giveRightToVote(ballotContract, voterAddress);
+      await expect(ballotContract.connect(accounts[1]).vote(0))
+        .to.emit(ballotContract, "Voted")
+        .withArgs(voterAddress, 0, 1, 1);
     });
   });
 
   describe("when the voter interact with the delegate function in the contract", function () {
+    // TODO
+    it("triggers the Delegated event", async function () {
+      const voterAddress = accounts[1].address;
+      await giveRightToVote(ballotContract, voterAddress);
+      const delegateAddress = accounts[2].address;
+      await giveRightToVote(ballotContract, delegateAddress);
+      await expect(
+        ballotContract.connect(accounts[1]).delegate(delegateAddress)
+      )
+        .to.emit(ballotContract, "Delegated")
+        .withArgs(voterAddress, delegateAddress, 2, false, 0, 0);
+    });
+  });
+
+  describe("when the voter interact with the delegate function in the contract, and the delegate has other delegate", function () {
+    // TODO
+    it("is not implemented", async function () {
+      throw new Error("Not implemented");
+    });
+  });
+
+  describe("when the voter interact with the delegate function in the contract, and the delegate has already voted", function () {
+    // TODO
+    it("is not implemented", async function () {
+      throw new Error("Not implemented");
+    });
+  });
+
+  describe("when the voter interact with the delegate function in the contract, and the delegate has other delegate that has already voted", function () {
     // TODO
     it("is not implemented", async function () {
       throw new Error("Not implemented");
