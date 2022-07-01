@@ -15,15 +15,19 @@ describe("NFT Shop", async () => {
   beforeEach(async () => {
     // TODO
     const tokenContractFactory = await ethers.getContractFactory("MyToken");
-    await tokenContractFactory.deploy();
+    const tokenContract = await tokenContractFactory.deploy();
+    const tokenAddress = tokenContract.address;
 
-    const nftContractFactory = await ethers.getContractFactory("MyToken");
-    await nftContractFactory.deploy();
+    const nftContractFactory = await ethers.getContractFactory("myNFT");
+    const nftContract = await nftContractFactory.deploy();
+    const nftAddress = nftContract.address;
 
     const shopContractFactory = await ethers.getContractFactory("Shop");
     shopContract = await shopContractFactory.deploy(
       DEFAULT_PURCHASE_RATIO,
-      ethers.utils.parseEther(DEFAULT_MINT_PRICE.toString())
+      ethers.utils.parseEther(DEFAULT_MINT_PRICE.toFixed(18)),
+      tokenAddress,
+      nftAddress
     );
 
     await shopContract.deployed();
@@ -51,11 +55,19 @@ describe("NFT Shop", async () => {
       expect(tokenContractAddress === ethers.constants.AddressZero).to.eq(
         false
       );
-
       const tokenContractFactory = await ethers.getContractFactory("MyToken");
       const tokenContract = await tokenContractFactory.attach(
         tokenContractAddress
       );
+
+      const symbol = await tokenContract.symbol();
+      const decimals = await tokenContract.decimals();
+      const tokenName = await tokenContract.name();
+
+      console.log(symbol);
+      expect(symbol).to.eq("MTK");
+      expect(decimals).to.eq(18);
+      expect(tokenName).to.eq("MyToken");
     });
 
     it("uses a valid ERC721 as NFT Collection", async () => {
