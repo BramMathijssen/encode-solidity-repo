@@ -11,11 +11,7 @@ contract Shop {
     address public paymentToken;
     address public collection;
 
-    constructor(
-        uint256 _purchaseRatio,
-        uint256 _mintPrice,
-        address _paymentToken,
-        address _collection
+    constructor(uint256 _purchaseRatio,uint256 _mintPrice,address _paymentToken,address _collection
     ) {
         purchaseRatio = _purchaseRatio;
         mintPrice = _mintPrice;

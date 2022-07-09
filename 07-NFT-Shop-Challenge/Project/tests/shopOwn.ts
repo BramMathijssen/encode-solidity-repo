@@ -12,14 +12,18 @@ const DEFAULT_MINT_PRICE = 0.3333333333333333;
 
 describe("NFT Shop", async () => {
   let shopContract: Shop;
+  let tokenContract: MyToken;
+  let nftContract: MyNFT;
+
   beforeEach(async () => {
-    // TODO
     const tokenContractFactory = await ethers.getContractFactory("MyToken");
-    const tokenContract = await tokenContractFactory.deploy();
+    tokenContract = await tokenContractFactory.deploy();
+    await tokenContract.deployed();
     const tokenAddress = tokenContract.address;
 
-    const nftContractFactory = await ethers.getContractFactory("myNFT");
-    const nftContract = await nftContractFactory.deploy();
+    const nftContractFactory = await ethers.getContractFactory("MyNFT");
+    nftContract = await nftContractFactory.deploy();
+    await nftContract.deployed();
     const nftAddress = nftContract.address;
 
     const shopContractFactory = await ethers.getContractFactory("Shop");
@@ -29,7 +33,6 @@ describe("NFT Shop", async () => {
       tokenAddress,
       nftAddress
     );
-
     await shopContract.deployed();
   });
 
@@ -74,6 +77,15 @@ describe("NFT Shop", async () => {
       // TODO
       const nftContractAddress = await shopContract.paymentToken();
       expect(nftContractAddress === ethers.constants.AddressZero).to.eq(false);
+
+      const nftContractFactory = await ethers.getContractFactory("MyNFT");
+      const nftContract = nftContractFactory.attach(nftContractAddress);
+
+      const nftName = await nftContract.name();
+      const nftSymbol = await nftContract.symbol();
+
+      expect(nftName).to.eq("MyToken");
+      expect(nftSymbol).to.eq("MTK");
     });
   });
 
