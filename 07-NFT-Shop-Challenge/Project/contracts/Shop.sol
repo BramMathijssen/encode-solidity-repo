@@ -11,7 +11,7 @@ interface IERC20MintableBurnable is IERC20 {
     function burnFrom(address, uint256) external;
 }
 
-interface IERC721MintableBurnable is IERC20 {
+interface IERC721MintableBurnable is IERC721 {
     function safeMint(address, uint256) external;
 
     function burn(uint256) external;

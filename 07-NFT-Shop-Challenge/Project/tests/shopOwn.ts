@@ -10,6 +10,7 @@ import { BigNumber } from "ethers";
 const DEFAULT_PURCHASE_RATIO = 100;
 const DEFAULT_MINT_PRICE = 0.3333333333333333;
 
+// HERE
 describe("NFT Shop", async () => {
   let shopContract: Shop;
   let tokenContract: MyToken;
@@ -17,6 +18,8 @@ describe("NFT Shop", async () => {
   let accounts: SignerWithAddress[];
 
   beforeEach(async () => {
+    accounts = await ethers.getSigners();
+
     const tokenContractFactory = await ethers.getContractFactory("MyToken");
     tokenContract = await tokenContractFactory.deploy();
     await tokenContract.deployed();
@@ -35,6 +38,19 @@ describe("NFT Shop", async () => {
       nftAddress
     );
     await shopContract.deployed();
+
+    const minterRole = await tokenContract.MINTER_ROLE();
+    const minterRoleTx = await tokenContract.grantRole(
+      minterRole,
+      shopContract.address
+    );
+    await minterRoleTx.wait();
+    const nftMinterRole = await nftContract.MINTER_ROLE();
+    const nftMinterRoleTx = await nftContract.grantRole(
+      nftMinterRole,
+      shopContract.address
+    );
+    await nftMinterRoleTx.wait();
   });
 
   describe("When the Shop contract is deployed", async () => {
@@ -92,8 +108,9 @@ describe("NFT Shop", async () => {
     let tokensEarned: BigNumber;
     const ETHER_SPEND = 500;
     beforeEach(async () => {
-      // TODO
       accountValue = await accounts[0].getBalance();
+      const parsedValue = ethers.utils.formatUnits(accountValue);
+      console.log("acc value before", parsedValue);
       const purchaseTokenTx = await shopContract.purchaseTokens({
         value: ethers.utils.parseEther(ETHER_SPEND.toFixed(0)),
       });
@@ -102,80 +119,102 @@ describe("NFT Shop", async () => {
       const effectiveGasPrice = receipt.effectiveGasPrice;
       txFee = gasUsed.mul(effectiveGasPrice);
       tokensEarned = await tokenContract.balanceOf(accounts[0].address);
+
+      // logs the account value after the purchase token tx, which should be 500 less than before 
+      const accountValueAfter: BigNumber = await accounts[0].getBalance();
+      const parsedValue2 = ethers.utils.formatUnits(accountValueAfter);
+      console.log("acc value after", parsedValue2);
     });
 
     it("charges the correct amount of ETH", async () => {
-      // TODO
+      const one = 1;
+      expect(one).to.eq(1);
     });
 
     it("gives the correct amount of tokens", async () => {
       // TODO
+      throw new Error("Not implemented");
     });
 
     describe("When a user burns an ERC20 at the Token contract", async () => {
       beforeEach(async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("gives the correct amount of ETH", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("burns the correct amount of tokens", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
     });
 
     describe("When a user purchase a NFT from the Shop contract", () => {
       beforeEach(async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("charges the correct amount of ERC20 tokens", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("mints the correct NFT to the buyer", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("updates the owner account correctly", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("update the pool account correctly", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       it("favors the pool with the rounding", async () => {
         // TODO
+        throw new Error("Not implemented");
       });
 
       describe("When a user burns their NFT at the Shop contract", async () => {
         beforeEach(async () => {
           // TODO
+          throw new Error("Not implemented");
         });
 
         it("gives the correct amount of ERC20 tokens", async () => {
           // TODO
+          throw new Error("Not implemented");
         });
 
         it("updates the pool correctly", async () => {
           // TODO
+          throw new Error("Not implemented");
         });
       });
 
       describe("When the owner withdraw from the Shop contract", async () => {
         beforeEach(async () => {
           // TODO
+          throw new Error("Not implemented");
         });
 
         it("recovers the right amount of ERC20 tokens", async () => {
           // TODO
+          throw new Error("Not implemented");
         });
 
         it("updates the owner account correctly", async () => {
           // TODO
+          throw new Error("Not implemented");
         });
       });
     });
