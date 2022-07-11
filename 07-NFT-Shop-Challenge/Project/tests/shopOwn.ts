@@ -111,6 +111,11 @@ describe("NFT Shop", async () => {
       accountValue = await accounts[0].getBalance();
       const parsedValue = ethers.utils.formatUnits(accountValue);
       console.log("acc value before", parsedValue);
+
+      console.log(
+        `MTK tokens before purchase of account 0: ${tokensEarned} MTK`
+      );
+
       const purchaseTokenTx = await shopContract.purchaseTokens({
         value: ethers.utils.parseEther(ETHER_SPEND.toFixed(0)),
       });
@@ -118,22 +123,37 @@ describe("NFT Shop", async () => {
       const gasUsed = receipt.gasUsed;
       const effectiveGasPrice = receipt.effectiveGasPrice;
       txFee = gasUsed.mul(effectiveGasPrice);
+
+      // with tokenContract.balanceOf() we call the default balanceOf method of the ERC20 contract
+      // to check the amount of MTK tokens an account owns
       tokensEarned = await tokenContract.balanceOf(accounts[0].address);
 
-      // logs the account value after the purchase token tx, which should be 500 less than before 
+      // logs the account value after the purchase token tx, which should be 500 less than before
       const accountValueAfter: BigNumber = await accounts[0].getBalance();
       const parsedValue2 = ethers.utils.formatUnits(accountValueAfter);
       console.log("acc value after", parsedValue2);
     });
 
     it("charges the correct amount of ETH", async () => {
-      const one = 1;
-      expect(one).to.eq(1);
+      const accountValueAfterTx = await accounts[0].getBalance();
+
+      // can use ETHER_SPEND.toString() or ETHER_SPEND.toFixed() like in the example
+      const totalSpend = ethers.utils
+        .parseEther(ETHER_SPEND.toString())
+        .add(txFee);
+      const expectedValueAfter = accountValue.sub(totalSpend);
+      expect(accountValueAfterTx).to.eq(expectedValueAfter);
     });
 
     it("gives the correct amount of tokens", async () => {
-      // TODO
-      throw new Error("Not implemented");
+      console.log(
+        `MTK tokens after purchase of account 0: ${tokensEarned} MTK`
+      );
+      expect(tokensEarned.toString()).to.eq(
+        ethers.utils
+          .parseEther((ETHER_SPEND / DEFAULT_PURCHASE_RATIO).toString())
+          .toString()
+      );
     });
 
     describe("When a user burns an ERC20 at the Token contract", async () => {
