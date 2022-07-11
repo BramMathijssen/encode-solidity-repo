@@ -14,6 +14,7 @@ describe("NFT Shop", async () => {
   let shopContract: Shop;
   let tokenContract: MyToken;
   let nftContract: MyNFT;
+  let accounts: SignerWithAddress[];
 
   beforeEach(async () => {
     const tokenContractFactory = await ethers.getContractFactory("MyToken");
@@ -38,13 +39,11 @@ describe("NFT Shop", async () => {
 
   describe("When the Shop contract is deployed", async () => {
     it("defines the ratio as provided in parameters", async () => {
-      // TODO
       const ratio = await shopContract.purchaseRatio();
       expect(ratio).to.eq(DEFAULT_PURCHASE_RATIO);
     });
 
     it("defines the mint price as provided in parameters", async () => {
-      // TODO
       const mintPrice = await shopContract.mintPrice();
 
       expect(Number(ethers.utils.formatEther(mintPrice))).to.eq(
@@ -53,7 +52,6 @@ describe("NFT Shop", async () => {
     });
 
     it("uses a valid ERC20 as payment token", async () => {
-      // TODO
       const tokenContractAddress = await shopContract.paymentToken();
       expect(tokenContractAddress === ethers.constants.AddressZero).to.eq(
         false
@@ -74,7 +72,6 @@ describe("NFT Shop", async () => {
     });
 
     it("uses a valid ERC721 as NFT Collection", async () => {
-      // TODO
       const nftContractAddress = await shopContract.paymentToken();
       expect(nftContractAddress === ethers.constants.AddressZero).to.eq(false);
 
@@ -90,8 +87,21 @@ describe("NFT Shop", async () => {
   });
 
   describe("When a user purchase an ERC20 from the Token contract", async () => {
+    let accountValue: BigNumber;
+    let txFee: BigNumber;
+    let tokensEarned: BigNumber;
+    const ETHER_SPEND = 500;
     beforeEach(async () => {
       // TODO
+      accountValue = await accounts[0].getBalance();
+      const purchaseTokenTx = await shopContract.purchaseTokens({
+        value: ethers.utils.parseEther(ETHER_SPEND.toFixed(0)),
+      });
+      const receipt = await purchaseTokenTx.wait();
+      const gasUsed = receipt.gasUsed;
+      const effectiveGasPrice = receipt.effectiveGasPrice;
+      txFee = gasUsed.mul(effectiveGasPrice);
+      tokensEarned = await tokenContract.balanceOf(accounts[0].address);
     });
 
     it("charges the correct amount of ETH", async () => {
