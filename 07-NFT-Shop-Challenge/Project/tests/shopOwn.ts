@@ -20,17 +20,20 @@ describe("NFT Shop", async () => {
   beforeEach(async () => {
     accounts = await ethers.getSigners();
 
-    const tokenContractFactory = await ethers.getContractFactory("MyToken");
+    const [tokenContractFactory, nftContractFactory, shopContractFactory] =
+      await Promise.all([
+        ethers.getContractFactory("MyToken"),
+        ethers.getContractFactory("MyNFT"),
+        ethers.getContractFactory("Shop"),
+      ]);
     tokenContract = await tokenContractFactory.deploy();
     await tokenContract.deployed();
     const tokenAddress = tokenContract.address;
 
-    const nftContractFactory = await ethers.getContractFactory("MyNFT");
     nftContract = await nftContractFactory.deploy();
     await nftContract.deployed();
     const nftAddress = nftContract.address;
 
-    const shopContractFactory = await ethers.getContractFactory("Shop");
     shopContract = await shopContractFactory.deploy(
       DEFAULT_PURCHASE_RATIO,
       ethers.utils.parseEther(DEFAULT_MINT_PRICE.toFixed(18)),
@@ -158,12 +161,26 @@ describe("NFT Shop", async () => {
 
     describe("When a user burns an ERC20 at the Token contract", async () => {
       beforeEach(async () => {
-        // TODO
-        throw new Error("Not implemented");
+        accountValue = await accounts[0].getBalance();
+        const purchaseTokenTx = await shopContract.purchaseTokens({
+          value: ethers.utils.parseEther(ETHER_SPEND.toFixed(0)),
+        });
+        const receipt = await purchaseTokenTx.wait();
+        const gasUsed = receipt.gasUsed;
+        const effectiveGasPrice = receipt.effectiveGasPrice;
+        txFee = gasUsed.mul(effectiveGasPrice);
       });
 
       it("gives the correct amount of ETH", async () => {
-        // TODO
+        const burnTokenTx = await shopContract.returnTokens(
+          ethers.utils.parseEther(ETHER_SPEND.toFixed(0))
+        );
+        const receipt = await burnTokenTx.wait();
+        const accountValueAfter = await accounts[0].getBalance();
+        const accountValueGas = accountValueAfter.sub(txFee);
+
+        expect(accountValue).to.eq(accountValue);
+
         throw new Error("Not implemented");
       });
 
